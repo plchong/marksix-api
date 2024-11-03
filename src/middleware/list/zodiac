@@ -1,0 +1,50 @@
+exports.zodiac = [
+  {
+    value: "鼠",
+    index: "1",
+  },
+  {
+    value: "牛",
+    index: "2",
+  },
+  {
+    value: "虎",
+    index: "3",
+  },
+  {
+    value: "兔",
+    index: "4",
+  },
+  {
+    value: "龍",
+    index: "5",
+  },
+  {
+    value: "蛇",
+    index: "6",
+  },
+  {
+    value: "馬",
+    index: "7",
+  },
+  {
+    value: "羊",
+    index: "8",
+  },
+  {
+    value: "猴",
+    index: "9",
+  },
+  {
+    value: "雞",
+    index: "10",
+  },
+  {
+    value: "狗",
+    index: "11",
+  },
+  {
+    value: "豬",
+    index: "12",
+  },
+];

@@ -1,0 +1,247 @@
+exports.gannSquareDynamic = [
+  {
+    x: 1,
+    y: 1,
+    position: 37,
+  },
+  {
+    x: 1,
+    y: 2,
+    position: 38,
+  },
+  {
+    x: 1,
+    y: 3,
+    position: 39,
+  },
+  {
+    x: 1,
+    y: 4,
+    position: 40,
+  },
+  {
+    x: 1,
+    y: 5,
+    position: 41,
+  },
+  {
+    x: 1,
+    y: 6,
+    position: 42,
+  },
+  {
+    x: 1,
+    y: 7,
+    position: 43,
+  },
+  {
+    x: 2,
+    y: 1,
+    position: 36,
+  },
+  {
+    x: 2,
+    y: 2,
+    position: 17,
+  },
+  {
+    x: 2,
+    y: 3,
+    position: 18,
+  },
+  {
+    x: 2,
+    y: 4,
+    position: 19,
+  },
+  {
+    x: 2,
+    y: 5,
+    position: 20,
+  },
+  {
+    x: 2,
+    y: 6,
+    position: 21,
+  },
+  {
+    x: 2,
+    y: 7,
+    position: 44,
+  },
+  {
+    x: 3,
+    y: 1,
+    position: 35,
+  },
+  {
+    x: 3,
+    y: 2,
+    position: 16,
+  },
+  {
+    x: 3,
+    y: 3,
+    position: 5,
+  },
+  {
+    x: 3,
+    y: 4,
+    position: 6,
+  },
+  {
+    x: 3,
+    y: 5,
+    position: 7,
+  },
+  {
+    x: 3,
+    y: 6,
+    position: 22,
+  },
+  {
+    x: 3,
+    y: 7,
+    position: 45,
+  },
+  {
+    x: 4,
+    y: 1,
+    position: 34,
+  },
+  {
+    x: 4,
+    y: 2,
+    position: 15,
+  },
+  {
+    x: 4,
+    y: 3,
+    position: 4,
+  },
+  {
+    x: 4,
+    y: 4,
+    position: 1,
+  },
+  {
+    x: 4,
+    y: 5,
+    position: 8,
+  },
+  {
+    x: 4,
+    y: 6,
+    position: 23,
+  },
+  {
+    x: 4,
+    y: 7,
+    position: 46,
+  },
+  {
+    x: 5,
+    y: 1,
+    position: 33,
+  },
+  {
+    x: 5,
+    y: 2,
+    position: 14,
+  },
+  {
+    x: 5,
+    y: 3,
+    position: 3,
+  },
+  {
+    x: 5,
+    y: 4,
+    position: 2,
+  },
+  {
+    x: 5,
+    y: 5,
+    position: 9,
+  },
+  {
+    x: 5,
+    y: 6,
+    position: 24,
+  },
+  {
+    x: 5,
+    y: 7,
+    position: 47,
+  },
+  {
+    x: 6,
+    y: 1,
+    position: 32,
+  },
+  {
+    x: 6,
+    y: 2,
+    position: 13,
+  },
+  {
+    x: 6,
+    y: 3,
+    position: 12,
+  },
+  {
+    x: 6,
+    y: 4,
+    position: 11,
+  },
+  {
+    x: 6,
+    y: 5,
+    position: 10,
+  },
+  {
+    x: 6,
+    y: 6,
+    position: 25,
+  },
+  {
+    x: 6,
+    y: 7,
+    position: 48,
+  },
+  {
+    x: 7,
+    y: 1,
+    position: 31,
+  },
+  {
+    x: 7,
+    y: 2,
+    position: 30,
+  },
+  {
+    x: 7,
+    y: 3,
+    position: 29,
+  },
+  {
+    x: 7,
+    y: 4,
+    position: 28,
+  },
+  {
+    x: 7,
+    y: 5,
+    position: 27,
+  },
+  {
+    x: 7,
+    y: 6,
+    position: 26,
+  },
+  {
+    x: 7,
+    y: 7,
+    position: 49,
+  },
+];
