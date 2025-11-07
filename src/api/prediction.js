@@ -23,9 +23,6 @@ try {
   console.log("⚠️ HKJC data fetcher not available");
 }
 
-// Import Advanced Statistical Predictor
-const AdvancedStatisticalPredictor = require("../../advancedStatisticalPredictor");
-
 // Create Enhanced Statistical Algorithm with Progressive Learning
 const enhancedStatisticalAlgorithm = {
   analyze: function(history) {
