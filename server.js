@@ -109,5 +109,6 @@ const ERROR_CODE = {
 };
 
 app.use("/api/marksix", require("./src/api/marksix"));
+app.use("/api/prediction", require("./src/api/prediction"));
 
 app.listen(port, () => logger.info("marksix server started " + port));
