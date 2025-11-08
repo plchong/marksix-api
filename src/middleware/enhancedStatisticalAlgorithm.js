@@ -54,34 +54,77 @@ const enhancedStatisticalAlgorithm = {
    * @returns {Object} { numbers: [int], extraNumber: int, method: string }
    */
   generateAdvancedPatternPrediction: function(trainingData) {
-    // 1. Frequency analysis (top 20 draws)
-    const frequency = {};
-    for (let i = 1; i <= 49; i++) frequency[i] = 0;
-    trainingData.forEach(draw => {
-      draw.numbers.forEach(num => frequency[num]++);
-    });
-    // 2. Recent trend (last 10 draws)
-    const recentDraws = trainingData.slice(-10);
-    const recentNumbers = new Set();
-    recentDraws.forEach(draw => draw.numbers.forEach(num => recentNumbers.add(num)));
-    // 3. Overdue numbers (not appeared in last 20 draws)
-    const overdueDraws = trainingData.slice(-20);
-    const overdueNumbers = new Set(Array.from({length: 49}, (_, i) => i + 1));
-    overdueDraws.forEach(draw => draw.numbers.forEach(num => overdueNumbers.delete(num)));
-    // 4. Select numbers: prioritize frequent, then recent, then overdue
-    const sortedByFreq = Object.entries(frequency)
+    // Use all historical data for analytics
+    const allDraws = trainingData;
+
+    // 1. Sliding window frequency (last 50 draws)
+    const windowSize = 50;
+    const windowDraws = allDraws.slice(-windowSize);
+    const freqWindow = {};
+    for (let i = 1; i <= 49; i++) freqWindow[i] = 0;
+    windowDraws.forEach(draw => draw.numbers.forEach(num => freqWindow[num]++));
+    const topWindowFreq = Object.entries(freqWindow)
       .sort(([,a], [,b]) => b - a)
+      .slice(0, 10)
       .map(([num]) => parseInt(num));
+
+    // 2. Pair and triplet analysis (all history)
+    const pairCounts = {};
+    const tripletCounts = {};
+    allDraws.forEach(draw => {
+      // Pairs
+      for (let i = 0; i < draw.numbers.length; i++) {
+        for (let j = i + 1; j < draw.numbers.length; j++) {
+          const key = [draw.numbers[i], draw.numbers[j]].sort((a,b)=>a-b).join('-');
+          pairCounts[key] = (pairCounts[key] || 0) + 1;
+        }
+      }
+      // Triplets
+      for (let i = 0; i < draw.numbers.length; i++) {
+        for (let j = i + 1; j < draw.numbers.length; j++) {
+          for (let k = j + 1; k < draw.numbers.length; k++) {
+            const key = [draw.numbers[i], draw.numbers[j], draw.numbers[k]].sort((a,b)=>a-b).join('-');
+            tripletCounts[key] = (tripletCounts[key] || 0) + 1;
+          }
+        }
+      }
+    });
+    // Find most common pairs/triplets
+    const topPairs = Object.entries(pairCounts).sort(([,a],[,b])=>b-a).slice(0,10).map(([key])=>key.split('-').map(Number));
+    const topTriplets = Object.entries(tripletCounts).sort(([,a],[,b])=>b-a).slice(0,5).map(([key])=>key.split('-').map(Number));
+
+    // 3. Gap/overdue analysis (all history)
+    const lastSeen = {};
+    for (let i = 1; i <= 49; i++) lastSeen[i] = -1;
+    allDraws.forEach((draw, idx) => {
+      draw.numbers.forEach(num => lastSeen[num] = idx);
+    });
+    const overdueNumbers = Object.entries(lastSeen)
+      .sort(([,a],[,b])=>a-b)
+      .slice(0,10)
+      .map(([num])=>parseInt(num));
+
+    // 4. Compose prediction: prioritize top window freq, then pairs/triplets, then overdue
     const selected = [];
-    // Add top 4 frequent numbers
-    for (let i = 0; i < sortedByFreq.length && selected.length < 4; i++) {
-      if (!selected.includes(sortedByFreq[i])) selected.push(sortedByFreq[i]);
+    // Add top 3 from sliding window frequency
+    for (let i = 0; i < topWindowFreq.length && selected.length < 3; i++) {
+      if (!selected.includes(topWindowFreq[i])) selected.push(topWindowFreq[i]);
     }
-    // Add 1 recent number
-    for (let num of recentNumbers) {
-      if (!selected.includes(num) && selected.length < 5) selected.push(num);
+    // Add numbers from most common pairs
+    for (let pair of topPairs) {
+      for (let num of pair) {
+        if (!selected.includes(num) && selected.length < 5) selected.push(num);
+      }
+      if (selected.length >= 5) break;
     }
-    // Add 1 overdue number
+    // Add numbers from most common triplets
+    for (let triplet of topTriplets) {
+      for (let num of triplet) {
+        if (!selected.includes(num) && selected.length < 6) selected.push(num);
+      }
+      if (selected.length >= 6) break;
+    }
+    // Fill with most overdue if needed
     for (let num of overdueNumbers) {
       if (!selected.includes(num) && selected.length < 6) selected.push(num);
     }
@@ -90,16 +133,17 @@ const enhancedStatisticalAlgorithm = {
       const num = Math.floor(Math.random() * 49) + 1;
       if (!selected.includes(num)) selected.push(num);
     }
-    // 5. Extra number: most frequent in trainingData
+
+    // Extra number: most frequent in all history
     const extraFrequency = {};
-    trainingData.forEach(draw => {
+    allDraws.forEach(draw => {
       extraFrequency[draw.extraNumber] = (extraFrequency[draw.extraNumber] || 0) + 1;
     });
     const predictedExtra = parseInt(Object.entries(extraFrequency).sort(([,a], [,b]) => b - a)[0]?.[0] || (Math.floor(Math.random() * 49) + 1));
     return {
       numbers: selected.sort((a, b) => a - b),
       extraNumber: predictedExtra,
-      method: "advanced_pattern_recognition"
+      method: "advanced_pattern_ensemble"
     };
   },
 
