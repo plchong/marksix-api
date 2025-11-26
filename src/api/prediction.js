@@ -35,8 +35,170 @@ try {
   console.log("⚠️ HKJC data fetcher not available");
 }
 
+
 // Import Enhanced Statistical Algorithm from new module
 const enhancedStatisticalAlgorithm = require("../middleware/enhancedStatisticalAlgorithm");
+
+// Import Gann Square method
+const gannQuareDiagram = require("../middleware/gannQuareDiagram");
+/**
+ * GANN SQUARE PREDICTION ENDPOINT
+ *
+ * GET /gann-square-predict
+ *
+ * Uses the Gann Square (冮恩圖) method to expand a set of seed numbers (e.g., last draw) into a prediction set.
+ *
+ * Query Parameters:
+ * - seed: Comma-separated numbers to use as the seed (default: last draw numbers)
+ *
+ * Returns:
+ * - predicted: Array of predicted numbers (expanded from seed)
+ * - seed: The input seed numbers
+ * - method: 'gann_square_expansion'
+ * - explanation: Description of the method
+ * - timestamp: Time of prediction
+ */
+/**
+ * GANN SQUARE PREDICTION ENDPOINT
+ *
+ * GET /gann-square-predict
+ *
+ * Uses the Gann Square (冮恩圖) method to expand a set of seed numbers (e.g., last draw) into a prediction set.
+ *
+ * Query Parameters:
+ * - seed: Comma-separated numbers to use as the seed (default: last draw numbers)
+ * - skipFetch: Optional, skip fetching latest HKJC data (default: false)
+ *
+ * Returns:
+ * - predicted: Array of predicted numbers (expanded from seed)
+ * - seed: The input seed numbers
+ * - method: 'gann_square_expansion'
+ * - explanation: Description of the method
+ * - timestamp: Time of prediction
+ */
+route.get("/gann-square-predict", async (req, res) => {
+  const { skipFetch = false, random = false } = req.query;
+  try {
+    // Optional HKJC Data Fetch (mirroring enhanced-predict logic)
+    let fetchedNewData = false;
+    if (!skipFetch && fetchHKJCData) {
+      try {
+        const newData = await fetchHKJCData();
+        if (newData && newData.length > 0) {
+          // Remove duplicates and sort by date (newest first)
+          const uniqueData = newData.filter((draw, index, array) => 
+            index === array.findIndex(d => d.drawDate === draw.drawDate)
+          ).sort((a, b) => new Date(b.drawDate) - new Date(a.drawDate));
+          historicalData.length = 0;
+          historicalData.push(...uniqueData);
+          await saveHistoricalDataToFile(uniqueData);
+          fetchedNewData = true;
+        }
+      } catch (fetchError) {
+        console.log("⚠️ HKJC fetch failed:", fetchError.message);
+      }
+    }
+
+    // Load historical data (in-memory or from file)
+    let history = [];
+    if (historicalData.length > 0) {
+      history = [...historicalData];
+    } else {
+      const fileData = await loadHistoricalDataFromFile();
+      if (fileData.length > 0) {
+        history = fileData;
+        historicalData.length = 0;
+        historicalData.push(...fileData);
+      } else {
+        return res.status(400).send({
+          success: false,
+          error: "No historical data available",
+        });
+      }
+    }
+
+    // Get seed numbers from query or use last draw
+    let seedNumbers = [];
+    if (req.query.seed) {
+      seedNumbers = req.query.seed.split(",").map(n => parseInt(n, 10)).filter(n => !isNaN(n));
+    } else if (history.length > 0) {
+      // Use last draw's main numbers plus extra number as default seed (if available)
+      const lastDraw = history[0];
+      if (Array.isArray(lastDraw.numbers)) {
+        seedNumbers = lastDraw.numbers.slice(0, 6);
+        if (typeof lastDraw.extraNumber === 'number') {
+          seedNumbers.push(lastDraw.extraNumber);
+        }
+      } else {
+        seedNumbers = [];
+      }
+    }
+    if (seedNumbers.length === 0) {
+      return res.status(400).send({
+        success: false,
+        error: "No valid seed numbers provided or found in last draw."
+      });
+    }
+
+    // Use Gann Square expansion
+    let predicted = gannQuareDiagram.lineupMethood(seedNumbers);
+
+    // Analyze historical frequency of each predicted number
+    const numberFrequency = {};
+    for (const draw of history) {
+      if (Array.isArray(draw.numbers)) {
+        for (const num of draw.numbers) {
+          if (predicted.includes(num)) {
+            numberFrequency[num] = (numberFrequency[num] || 0) + 1;
+          }
+        }
+        if (typeof draw.extraNumber === 'number' && predicted.includes(draw.extraNumber)) {
+          numberFrequency[draw.extraNumber] = (numberFrequency[draw.extraNumber] || 0) + 1;
+        }
+      }
+    }
+
+    // Sort predicted numbers by frequency (most popular first)
+    let sortedPredicted = predicted.slice().sort((a, b) => {
+      const freqA = numberFrequency[a] || 0;
+      const freqB = numberFrequency[b] || 0;
+      // Descending by frequency, then ascending by number
+      if (freqB !== freqA) return freqB - freqA;
+      return a - b;
+    });
+
+    // Always return the 7 most popular numbers
+    const mostPopular = sortedPredicted.slice(0, 7);
+
+    // Optionally, random selection from mostPopular
+    let randomSelected = null;
+    const randomFlag = (typeof random === 'string' && (random === 'true' || random === '1')) || random === true;
+    if (randomFlag && mostPopular.length === 7) {
+      const shuffled = mostPopular.slice().sort(() => Math.random() - 0.5);
+      randomSelected = shuffled;
+    }
+
+    return res.send({
+      success: true,
+      predicted: randomSelected || mostPopular,
+      seed: seedNumbers,
+      method: "gann_square_expansion_with_historical_popularity",
+      explanation: `Expands the input seed numbers using the Gann Square (冮恩圖) method, then ranks the expanded set by historical popularity (frequency in past draws). Always returns the 7 most popular numbers.${randomSelected ? ' Returned 7 random numbers from the most popular set.' : ''}`,
+      fetchedNewData,
+      dataSource: fetchedNewData ? "Fresh HKJC data" : "Existing JSON data",
+      timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
+      numberFrequency,
+      ...(randomSelected ? { random: true, randomFromPredicted: true } : {})
+    });
+  } catch (err) {
+    console.log("Gann Square prediction error:", err.message);
+    return res.status(500).send({
+      success: false,
+      error: "Gann Square prediction failed",
+      message: err.message,
+    });
+  }
+});
 
 
 // ===============================================
