@@ -42,41 +42,26 @@ const enhancedStatisticalAlgorithm = require("../middleware/enhancedStatisticalA
 // Import Gann Square method
 const gannQuareDiagram = require("../middleware/gannQuareDiagram");
 /**
- * GANN SQUARE PREDICTION ENDPOINT
- *
- * GET /gann-square-predict
- *
- * Uses the Gann Square (冮恩圖) method to expand a set of seed numbers (e.g., last draw) into a prediction set.
- *
- * Query Parameters:
- * - seed: Comma-separated numbers to use as the seed (default: last draw numbers)
- *
- * Returns:
- * - predicted: Array of predicted numbers (expanded from seed)
- * - seed: The input seed numbers
- * - method: 'gann_square_expansion'
- * - explanation: Description of the method
- * - timestamp: Time of prediction
- */
 /**
- * GANN SQUARE PREDICTION ENDPOINT
+ * GANN SQUARE POPULAR PREDICTION ENDPOINT
  *
- * GET /gann-square-predict
+ * GET /gann-square-popular-predict
  *
- * Uses the Gann Square (冮恩圖) method to expand a set of seed numbers (e.g., last draw) into a prediction set.
+ * Uses the Gann Square (冮恩圖) method to expand a set of seed numbers (e.g., last draw) into a prediction set,
+ * then ranks the expanded set by historical popularity (frequency in past draws) and returns the 7 most popular numbers.
  *
  * Query Parameters:
  * - seed: Comma-separated numbers to use as the seed (default: last draw numbers)
  * - skipFetch: Optional, skip fetching latest HKJC data (default: false)
  *
  * Returns:
- * - predicted: Array of predicted numbers (expanded from seed)
+ * - predicted: Array of 7 most popular numbers (expanded from seed)
  * - seed: The input seed numbers
- * - method: 'gann_square_expansion'
+ * - method: 'gann_square_expansion_with_historical_popularity'
  * - explanation: Description of the method
  * - timestamp: Time of prediction
  */
-route.get("/gann-square-predict", async (req, res) => {
+route.get("/gann-square-popular-predict", async (req, res) => {
   const { skipFetch = false, random = false } = req.query;
   try {
     // Optional HKJC Data Fetch (mirroring enhanced-predict logic)
