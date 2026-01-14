@@ -49,6 +49,7 @@ route.get("/gannMethodInGannSquareDiagram", async (req, res) => {
   try {
     const positionNumbers = await lineupMethood(markNumbers);
     console.log(positionNumbers);
+    return positionNumbers
   } catch (err) {
     return logger.error("error " + err);
   }

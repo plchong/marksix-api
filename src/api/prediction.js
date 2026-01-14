@@ -62,7 +62,7 @@ const gannQuareDiagram = require("../middleware/gannQuareDiagram");
  * - timestamp: Time of prediction
  */
 route.get("/gann-square-popular-predict", async (req, res) => {
-  const { skipFetch = false, random = false } = req.query;
+  const { skipFetch = false, random = false, seed } = req.query;
   try {
     // Optional HKJC Data Fetch (mirroring enhanced-predict logic)
     let fetchedNewData = false;
@@ -155,25 +155,40 @@ route.get("/gann-square-popular-predict", async (req, res) => {
     // Always return the 7 most popular numbers
     const mostPopular = sortedPredicted.slice(0, 7);
 
-    // Optionally, random selection from mostPopular
-    let randomSelected = null;
-    const randomFlag = (typeof random === 'string' && (random === 'true' || random === '1')) || random === true;
-    if (randomFlag && mostPopular.length === 7) {
-      const shuffled = mostPopular.slice().sort(() => Math.random() - 0.5);
-      randomSelected = shuffled;
+    // Determine if the request is a default (no random, no seed)
+    const isDefaultRequest = !random && !seed;
+    let predictedResult, explanation, randomUsed = false;
+
+    if (isDefaultRequest) {
+      // Shuffle sortedPredicted and take first 7
+      const shuffled = sortedPredicted.slice().sort(() => Math.random() - 0.5);
+      predictedResult = shuffled.slice(0, 7);
+      explanation = 'No random or seed parameter provided: returned 7 random numbers from the Gann Square expansion set.';
+      randomUsed = true;
+    } else {
+      // Optionally, random selection from mostPopular
+      let randomSelected = null;
+      const randomFlag = (typeof random === 'string' && (random === 'true' || random === '1')) || random === true;
+      if (randomFlag && mostPopular.length === 7) {
+        const shuffled = mostPopular.slice().sort(() => Math.random() - 0.5);
+        randomSelected = shuffled;
+      }
+      predictedResult = randomSelected || mostPopular;
+      explanation = `Expands the input seed numbers using the Gann Square (冮恩圖) method, then ranks the expanded set by historical popularity (frequency in past draws). Always returns the 7 most popular numbers.${randomSelected ? ' Returned 7 random numbers from the most popular set.' : ''}`;
+      randomUsed = !!randomSelected;
     }
 
     return res.send({
       success: true,
-      predicted: randomSelected || mostPopular,
+      predicted: predictedResult,
       seed: seedNumbers,
       method: "gann_square_expansion_with_historical_popularity",
-      explanation: `Expands the input seed numbers using the Gann Square (冮恩圖) method, then ranks the expanded set by historical popularity (frequency in past draws). Always returns the 7 most popular numbers.${randomSelected ? ' Returned 7 random numbers from the most popular set.' : ''}`,
+      explanation,
       fetchedNewData,
       dataSource: fetchedNewData ? "Fresh HKJC data" : "Existing JSON data",
       timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
       numberFrequency,
-      ...(randomSelected ? { random: true, randomFromPredicted: true } : {})
+      ...(randomUsed ? { random: true, randomFromPredicted: true } : {})
     });
   } catch (err) {
     console.log("Gann Square prediction error:", err.message);
